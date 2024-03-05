@@ -6,7 +6,10 @@ from taggit.models import TaggedItemBase
 
 from wagtail.models import Page, Orderable
 from wagtail.snippets.models import register_snippet
-from wagtail.fields import RichTextField
+from wagtail.fields import RichTextField, StreamField
+from wagtail import blocks
+from wagtail.images.blocks import ImageChooserBlock
+from wagtail.embeds.blocks import EmbedBlock
 from wagtail.admin.panels import FieldPanel, InlinePanel, MultiFieldPanel
 from wagtail.search import index
 
@@ -44,7 +47,14 @@ class BlogPageIndexTag(Page):
 class BlogPage(Page):
     date = models.DateField("Post date")
     intro = models.CharField(max_length=250)
-    body = RichTextField(blank=True)
+    body = StreamField([
+        ('heading', blocks.CharBlock(form_classname="title")),
+        ('paragraph', blocks.RichTextBlock()),
+        ('image', ImageChooserBlock(required=False)),
+        ('quote', blocks.BlockQuoteBlock(required=False)),
+        ('video', EmbedBlock(required=False)),
+        ('code_snippet', blocks.TextBlock(form_classname="Code Snippet", required=False))
+    ], use_json_field=True)
     authors = ParentalManyToManyField('blog.Author', blank=True)
     tags = ClusterTaggableManager(through=BlogPageTag, blank=True)
 
