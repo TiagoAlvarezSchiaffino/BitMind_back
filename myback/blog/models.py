@@ -93,6 +93,7 @@ class BlogPage(Page):
         ], heading="Blog information"),
         FieldPanel('tags'),
         FieldPanel('intro'),
+        FieldPanel('programming_language'),
         FieldPanel('body', classname="full"),
         InlinePanel('gallery_images', label="Gallery images")
     ]
