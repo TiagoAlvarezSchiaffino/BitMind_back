@@ -8,10 +8,13 @@ from wagtail.models import Page, Orderable
 from wagtail.snippets.models import register_snippet
 from wagtail.fields import RichTextField, StreamField
 from wagtail import blocks
+from wagtail.images import get_image_model_string
 from wagtail.images.blocks import ImageChooserBlock
 from wagtail.embeds.blocks import EmbedBlock
 from wagtail.admin.panels import FieldPanel, InlinePanel, MultiFieldPanel
 from wagtail.search import index
+from wagtail.api import APIField
+from rest_framework.fields import DateField
 
 class BlogPageTag(TaggedItemBase):
     content_object = ParentalKey(
@@ -34,6 +37,10 @@ class BlogIndexPage(Page):
         blogpages = self.get_children().live().order_by('-first_published_at')
         context['blogpages'] = blogpages
         return context
+    
+    api_fields = [
+        APIField('intro')
+    ]
     
 class BlogPageIndexTag(Page):
     def get_context(self, request):
@@ -70,6 +77,13 @@ class BlogPage(Page):
         index.SearchField('body'),
     ]
 
+    api_fields = [
+        APIField('date', serializer=DateField(format='%a %d %b %Y')),
+        APIField('body'),
+        APIField('authors'),
+        APIField('tags'),
+    ]
+
     caption = models.CharField(blank=True, max_length=250)
 
     content_panels = Page.content_panels + [
@@ -85,7 +99,7 @@ class BlogPage(Page):
 
 class BlogPageGallery(Orderable):
     page = ParentalKey(BlogPage, on_delete=models.SET_NULL, related_name='gallery_images', null=True)
-    image = models.ForeignKey('wagtailimages.Image', on_delete=models.SET_NULL, related_name='+', null=True)
+    image = models.ForeignKey(get_image_model_string(), blank=True, on_delete=models.SET_NULL, related_name='+', null=True)
     caption = models.CharField(max_length=250, blank=True)
 
     panels = [
@@ -105,6 +119,10 @@ class Author(models.Model):
     panels = [
         FieldPanel('name'),
         FieldPanel('author_image'),
+    ]
+
+    api_fields = [
+        APIField('name'),
     ]
 
     def __str__(self):
