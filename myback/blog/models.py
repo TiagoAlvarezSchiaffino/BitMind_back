@@ -37,11 +37,7 @@ class BlogIndexPage(Page):
         blogpages = self.get_children().live().order_by('-first_published_at')
         context['blogpages'] = blogpages
         return context
-    
-    api_fields = [
-        APIField('intro')
-    ]
-    
+
 class BlogPageIndexTag(Page):
     def get_context(self, request):
         tag = request.GET.get('tag')
@@ -64,6 +60,7 @@ class BlogPage(Page):
     ], use_json_field=True)
     authors = ParentalManyToManyField('blog.Author', blank=True)
     tags = ClusterTaggableManager(through=BlogPageTag, blank=True)
+    featured = models.BooleanField(default=False)
 
     def main_image(self):
         gallery_item = self.gallery_images.first()
@@ -82,6 +79,7 @@ class BlogPage(Page):
         APIField('body'),
         APIField('authors'),
         APIField('tags'),
+        APIField('featured'),
     ]
 
     caption = models.CharField(blank=True, max_length=250)
@@ -95,6 +93,7 @@ class BlogPage(Page):
         FieldPanel('intro'),
         FieldPanel('programming_language'),
         FieldPanel('body', classname="full"),
+        FieldPanel('featured'),
         InlinePanel('gallery_images', label="Gallery images")
     ]
 
