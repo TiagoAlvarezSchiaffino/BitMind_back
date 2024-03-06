@@ -13,3 +13,7 @@ class TagPostAPIViewSet(PagesAPIViewSet):
     renderer_classes = [JSONRenderer]
     model = BlogPageIndexTag
     name = "tags"
+
+class PostImagesAPIViewSet(ImagesAPIViewSet):
+    renderer_classes = [JSONRenderer]
+    name = "images"
