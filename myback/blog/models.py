@@ -14,52 +14,57 @@ from wagtail.admin.panels import FieldPanel, InlinePanel, MultiFieldPanel
 from wagtail.search import index
 from wagtail.api import APIField
 from .custom import ImageChooserBlock
-from rest_framework.fields import DateField
+from rest_framework.fields import DateField, DateTimeField
+from rest_framework import serializers
 
-class BlogPageTag(TaggedItemBase):
-    content_object = ParentalKey(
-        'BlogPage',
-        related_name='tagged_items',
-        on_delete=models.SET_NULL,
-        null=True
-    )
+@register_snippet
+class Tag(index.Indexed, models.Model):
+    name = models.CharField(max_length=100, null=True)
+
+    panels = [
+        FieldPanel('name')
+    ]
+
+    search_fields = [
+        index.SearchField('name'),
+    ]
+
+    api_fields = [
+        APIField('name'),
+    ]
+
+    def __str__(self):
+        return self.name
+    
+    class Meta:
+        ordering = ["name"]
 
 class BlogIndexPage(Page):
     intro = RichTextField(blank=True)
 
     content_panels = Page.content_panels + [
-        FieldPanel('intro', classname="full")
+        FieldPanel('intro'),
     ]
 
     def get_context(self, request):
-        # Update context to include only published posts, ordered by reverse-chron
         context = super().get_context(request)
         blogpages = self.get_children().live().order_by('-first_published_at')
         context['blogpages'] = blogpages
         return context
 
-class BlogPageIndexTag(Page):
-    def get_context(self, request):
-        tag = request.GET.get('tag')
-        blogpages = BlogPage.objects.filter(tags__name=tag)
-
-        context = super().get_context(request)
-        context['blogpages'] = blogpages
-        return context
-
 class BlogPage(Page):
     date = models.DateField("Post date")
-    intro = models.CharField(max_length=250)
+    intro = RichTextField(blank=True)
     body = StreamField([
         ('heading', blocks.CharBlock(form_classname="title")),
         ('paragraph', blocks.RichTextBlock()),
         ('image', ImageChooserBlock(required=False)),
         ('quote', blocks.BlockQuoteBlock(required=False)),
-        ('video', blocks.URLBlock(required=False, default=None)),
+        ('video', EmbedBlock(required=False)),
         ('code_snippet', blocks.TextBlock(form_classname="Code Snippet", required=False))
     ], use_json_field=True)
     authors = ParentalManyToManyField('blog.Author', blank=True)
-    tags = ClusterTaggableManager(through=BlogPageTag, blank=True)
+    tags = ParentalManyToManyField('Tag', blank=True)
     featured = models.BooleanField(default=False)
 
     def main_image(self):
@@ -75,24 +80,22 @@ class BlogPage(Page):
     ]
 
     api_fields = [
-        APIField('date', serializer=DateField(format='%a %d %b %Y')),
+        APIField('date', serializer=DateField(format='%d/%m/%y')),
+        APIField('latest_revision_created_at', serializer=DateTimeField(format='%d/%m/%y')),
         APIField('body'),
-        APIField('authors'),
-        APIField('tags'),
+        APIField('authors', serializer=serializers.StringRelatedField(many=True)),
+        APIField('tags', serializer=serializers.StringRelatedField(many=True)),
         APIField('featured'),
     ]
-
-    caption = models.CharField(blank=True, max_length=250)
 
     content_panels = Page.content_panels + [
         MultiFieldPanel([
             FieldPanel('date'),
             FieldPanel('authors', widget=forms.CheckboxSelectMultiple),
+            FieldPanel('tags', widget=forms.CheckboxSelectMultiple),
         ], heading="Blog information"),
-        FieldPanel('tags'),
         FieldPanel('intro'),
-        FieldPanel('programming_language'),
-        FieldPanel('body', classname="full"),
+        FieldPanel('body'),
         FieldPanel('featured'),
         InlinePanel('gallery_images', label="Gallery images")
     ]
