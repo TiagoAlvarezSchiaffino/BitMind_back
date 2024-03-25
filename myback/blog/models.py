@@ -55,6 +55,7 @@ class BlogIndexPage(Page):
 class BlogPage(Page):
     date = models.DateField("Post date")
     intro = RichTextField(blank=True)
+    programming_language = models.CharField(blank=True, null=True, max_length=100)
     body = StreamField([
         ('heading', blocks.CharBlock(form_classname="title")),
         ('subtitle', blocks.CharBlock(form_classname="subtitle", required=False)),
@@ -62,7 +63,7 @@ class BlogPage(Page):
         ('image', ImageChooserBlock(required=False)),
         ('quote', blocks.BlockQuoteBlock(required=False)),
         ('video', EmbedBlock(required=False)),
-        ('code_snippet', blocks.TextBlock(form_classname="Code Snippet", required=False))
+        ('code_snippet', blocks.TextBlock(form_classname="Code Snippet", required=False, help_text="Snippet with code"))
     ], use_json_field=True)
     authors = ParentalManyToManyField('blog.Author', blank=True)
     tags = ParentalManyToManyField('Tag', blank=True)
@@ -83,6 +84,7 @@ class BlogPage(Page):
     api_fields = [
         APIField('date', serializer=DateField(format='%d/%m/%y')),
         APIField('intro'),
+        APIField('programming_language'),
         APIField('first_published_at', serializer=DateTimeField(format='%d %m %Y')),
         APIField('latest_revision_created_at', serializer=DateTimeField(format='%d/%m/%Y')),
         APIField('body'),
