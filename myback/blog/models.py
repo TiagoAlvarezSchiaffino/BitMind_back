@@ -97,6 +97,7 @@ class BlogPage(Page):
             FieldPanel('tags', widget=forms.CheckboxSelectMultiple),
         ], heading="Blog information"),
         FieldPanel('intro'),
+        FieldPanel('programming_language'),
         FieldPanel('body'),
         FieldPanel('featured'),
         InlinePanel('gallery_images', label="Gallery images")
