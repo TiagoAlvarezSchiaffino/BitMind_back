@@ -80,8 +80,10 @@ class BlogPage(Page):
     ]
 
     api_fields = [
-        APIField('date', serializer=DateField(format='%d/%m/%y')),
-        APIField('latest_revision_created_at', serializer=DateTimeField(format='%d/%m/%y')),
+        APIField('date', serializer=DateField(format='%d/%m/%Y')),
+                APIField('intro'),
+        APIField('first_published_at', serializer=DateTimeField(format='%d %m %Y')),
+        APIField('latest_revision_created_at', serializer=DateTimeField(format='%d/%m/%Y')),
         APIField('body'),
         APIField('authors', serializer=serializers.StringRelatedField(many=True)),
         APIField('tags', serializer=serializers.StringRelatedField(many=True)),
