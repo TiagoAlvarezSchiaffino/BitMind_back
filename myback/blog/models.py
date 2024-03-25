@@ -57,6 +57,7 @@ class BlogPage(Page):
     intro = RichTextField(blank=True)
     body = StreamField([
         ('heading', blocks.CharBlock(form_classname="title")),
+        ('subtitle', blocks.CharBlock(form_classname="subtitle", required=False)),
         ('paragraph', blocks.RichTextBlock()),
         ('image', ImageChooserBlock(required=False)),
         ('quote', blocks.BlockQuoteBlock(required=False)),
@@ -80,8 +81,8 @@ class BlogPage(Page):
     ]
 
     api_fields = [
-        APIField('date', serializer=DateField(format='%d/%m/%Y')),
-                APIField('intro'),
+        APIField('date', serializer=DateField(format='%d/%m/%y')),
+        APIField('intro'),
         APIField('first_published_at', serializer=DateTimeField(format='%d %m %Y')),
         APIField('latest_revision_created_at', serializer=DateTimeField(format='%d/%m/%Y')),
         APIField('body'),
@@ -98,6 +99,8 @@ class BlogPage(Page):
         ], heading="Blog information"),
         FieldPanel('intro'),
         FieldPanel('programming_language'),
+        APIField('first_published_at', serializer=DateTimeField(format=f'%d/%m/%Y')),
+        APIField('latest_revision_created_at', serializer=DateTimeField(format=f'%d/%m/%Y')),
         FieldPanel('body'),
         FieldPanel('featured'),
         InlinePanel('gallery_images', label="Gallery images")
